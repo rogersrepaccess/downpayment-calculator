@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.png" type="image/png">
+    <title>Downpayment calculator</title>
+    <style>
+      
+        @font-face {
+          font-family: 'Ted Next';
+          src: url('https://raw.githubusercontent.com/rogersrepaccess/devis/main/fonts/TedNext-Regular.woff') format('woff');
+          font-weight: normal;
+          font-style: normal;
+        }   
+      
+        body {
+            font-family: 'Ted Next';
+            margin: 20px;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+      
+        .header {
+          display: flex;
+          flex-direction: row;
+          border: 0px solid black;
+        }
+      
+        .header-spacer {
+          display: flex;
+          flex-direction: column;
+          border: 0px solid black;
+          width: 20%
+        }
+      
+        .header-title {
+          display: flex;
+          flex-direction: column;
+          border: 0px solid black;
+          width: 60%
+        }
+      
+        .header-language {
+          display: flex;
+          flex-direction: column;
+          border: 0px solid black;
+          width: 20%;
+          justify-content: center;
+        }
+      
+          #language {
+            font-size: 18px;
+            color: #3D3C3C;
+            text-decoration: underline;
+            transition-duration: 200ms;
+          }
+      
+          #language:hover {
+            font-size: 20px;
+          }
+      
+        h1 {
+            text-align: center;
+            color: #DA291C;
+            margin-bottom: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .section {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            width: 400px; /* Réduction de la largeur */
+            max-width: 100%; /* S'adapte sur petits écrans */
+        }
+        .section h2 {
+            color: #DA291C;
+            margin-bottom: 15px;
+        }
+        .input-container {
+            margin-bottom: 15px;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="text"], select {
+            padding: 10px;
+            width: 100%;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        .result {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 15px;
+        }
+        .result span {
+            color: #DA291C;
+        }
+    </style>
+</head>
+<body>
+  
+  <div class="header">
+    
+    <div class="header-spacer">
+      
+    </div>
+    
+    <div class="header-title">
+    
+      <h1>Downpayment calculator</h1>
+      
+    </div>
+      
+    <div class="header-language">  
+
+      <div class="language-change">
+        <a href="https://rogersrepaccess.github.io/calculateur-acompte/" id="language">
+          Français
+        </a>
+      </div>
+      
+    </div>
+    
+  </div>
+  
+    <div class="container">
+        <div class="section" id="tarifs-affiches">
+            <h2>Displayed prices</h2>
+            <div class="input-container">
+                <label for="mensualite">Monthly payment :</label>
+                <input type="text" id="mensualite" name="mensualite" placeholder="0,00 $" onblur="formatCurrency('mensualite'); calculateTotal()">
+            </div>
+            <div class="input-container">
+                <label for="acompte">Downpayment :</label>
+                <input type="text" id="acompte" name="acompte" placeholder="0,00 $" onblur="formatCurrency('acompte'); calculateTotal()">
+            </div>
+            <div class="result">
+                Financing total : <span id="totalFinancement">0,00 $</span>
+            </div>
+        </div>
+
+        <div class="section" id="tarifs-ajustes">
+            <h2>Adjusted prices</h2>
+            <div class="input-container">
+                <label for="adjustmentRate">Required downpayment :</label>
+                <select id="adjustmentRate" name="adjustmentRate" onchange="calculateAdjustedValues()">
+                    <option value="0">0%</option>
+                    <option value="10">10%</option>
+                    <option value="20">20%</option>
+                    <option value="30">30%</option>
+                    <option value="40">40%</option>
+                    <option value="50">50%</option>
+                    <option value="60">60%</option>
+                    <option value="70">70%</option>
+                    <option value="80">80%</option>
+                    <option value="90">90%</option>
+                    <option value="100">100%</option>
+                </select>
+            </div>
+            <div class="result">
+               Adjusted downpayment : <span id="adjustedAcompte">0,00 $</span>
+            </div>
+            <div class="result">
+                Adjusted monthly payment : <span id="adjustedMensualite">0,00 $</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Fonction pour formater un montant en devise canadienne
+        function formatCurrency(id) {
+            const input = document.getElementById(id);
+            let value = input.value;
+
+            // Remplacer la virgule par un point pour gérer les saisies avec des virgules
+            value = value.replace(',', '.');
+
+            // Tenter de convertir la valeur en nombre
+            const number = parseFloat(value);
+
+            if (!isNaN(number)) {
+                // Formatage en devise canadienne en français
+                const formattedValue = number.toLocaleString('fr-CA', {
+                    style: 'currency',
+                    currency: 'CAD',
+                    minimumFractionDigits: 2
+                });
+
+                // Supprimer l'espace insécable pour respecter l'affichage demandé
+                input.value = formattedValue.replace(/\u00A0/g, ' ');
+            } else {
+                // Si la valeur saisie n'est pas un nombre valide, vider le champ
+                input.value = '';
+            }
+        }
+
+        // Fonction pour calculer le total du financement
+        function calculateTotal() {
+            const mensualiteInput = document.getElementById('mensualite').value.replace(',', '.').replace(/[^0-9.]/g, '');
+            const acompteInput = document.getElementById('acompte').value.replace(',', '.').replace(/[^0-9.]/g, '');
+
+            const mensualite = parseFloat(mensualiteInput) || 0;
+            const acompte = parseFloat(acompteInput) || 0;
+
+            // Calcul du total : (24 x Mensualité) + Acompte
+            const totalFinancement = (24 * mensualite) + acompte;
+
+            // Afficher le total formaté
+            document.getElementById('totalFinancement').textContent = totalFinancement.toLocaleString('fr-CA', {
+                style: 'currency',
+                currency: 'CAD',
+                minimumFractionDigits: 2
+            });
+
+            // Mettre à jour les valeurs ajustées
+            calculateAdjustedValues();
+        }
+
+        // Fonction pour calculer les valeurs ajustées (Acompte et Mensualité)
+        function calculateAdjustedValues() {
+            const totalFinancementText = document.getElementById('totalFinancement').textContent.replace(',', '.').replace(/[^0-9.]/g, '');
+            const adjustmentRate = parseFloat(document.getElementById('adjustmentRate').value) || 0;
+
+            const totalFinancement = parseFloat(totalFinancementText) || 0;
+            const adjustedAcompte = (totalFinancement * adjustmentRate) / 100;
+            const adjustedMensualite = (totalFinancement - adjustedAcompte) / 24;
+
+            // Afficher l'acompte ajusté formaté
+            document.getElementById('adjustedAcompte').textContent = adjustedAcompte.toLocaleString('fr-CA', {
+                style: 'currency',
+                currency: 'CAD',
+                minimumFractionDigits: 2
+            });
+
+            // Afficher la mensualité ajustée formatée
+            document.getElementById('adjustedMensualite').textContent = adjustedMensualite.toLocaleString('fr-CA', {
+                style: 'currency',
+                currency: 'CAD',
+                minimumFractionDigits: 2
+            });
+        }
+    </script>
+</body>
+</html>
